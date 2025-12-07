@@ -1,0 +1,172 @@
+<% layout('layouts/boilerplate') -%>
+
+<!-- Page Header -->
+<div class="container">
+  <div class="page-header text-center py-4 mb-4 shadow-sm rounded">
+    <h2 class="fw-bold text-white">
+      Attendees <%= event ? (' • ' + event.EVENT_NAME) : '' %>
+    </h2>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Add Attendee Button (Organizer Only) -->
+  <% if(event && user && event.ORGANIZER_ID === user.USER_ID) { %>
+  <a
+    href="/events/<%= event.EVENT_ID %>/attendees/new"
+    class="btn btn-primary mb-4 shadow-sm add-btn"
+  >
+    <i class="fa-solid fa-user-plus me-1"></i> Add Attendee
+  </a>
+  <% } %>
+
+  <!-- Table Container -->
+  <div class="card shadow-lg border-0 attendees-card">
+    <div class="table-responsive p-3">
+      <table class="table table-hover align-middle table-borderless">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Number</th>
+            <th>Event</th>
+            <th>Status</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% for(let att of attendees) { %> <% const isOwner = user &&
+          att.USER_ID === user.USER_ID; %> <% const isOrganizer = user && event
+          && event.ORGANIZER_ID === user.USER_ID; %>
+
+          <tr class="attendee-row">
+            <td><%= att.ATTENDEE_ID %></td>
+            <td class="fw-semibold"><%= att.NAME %></td>
+            <td><%= att.EMAIL || 'N/A' %></td>
+            <td><%= att.NUMBER %></td>
+            <td><%= att.EVENT_NAME || (event ? event.EVENT_NAME : 'N/A') %></td>
+
+            <!-- Status Pill -->
+            <td>
+              <span
+                class="status-pill <%= att.STATUS === 'Confirmed' ? 'status-confirmed' : att.STATUS === 'Pending' ? 'status-pending' : 'status-other' %>"
+              >
+                <%= att.STATUS %>
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td class="text-center">
+              <% if(isOwner) { %>
+              <a
+                href="/attendees/<%= att.ATTENDEE_ID %>/edit"
+                class="btn btn-sm btn-outline-primary me-1 action-btn"
+              >
+                <i class="fa-solid fa-pen"></i>
+              </a>
+
+              <form
+                action="/attendees/<%= att.ATTENDEE_ID %>?_method=DELETE"
+                method="POST"
+                class="d-inline"
+              >
+                <button
+                  type="submit"
+                  class="btn btn-sm btn-outline-danger action-btn"
+                  onclick="return confirm('Leave this event?')"
+                >
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+              </form>
+
+              <% } else if(isOrganizer) { %>
+
+              <form
+                action="/attendees/<%= att.ATTENDEE_ID %>?_method=DELETE"
+                method="POST"
+                class="d-inline"
+              >
+                <button
+                  type="submit"
+                  class="btn btn-sm btn-outline-danger action-btn"
+                  onclick="return confirm('Remove this attendee?')"
+                >
+                  <i class="fa-solid fa-user-minus"></i>
+                </button>
+              </form>
+
+              <% } %>
+            </td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Styling -->
+<style>
+  .page-header {
+    background: linear-gradient(135deg, #0d6efd, #5c8eff);
+    border-radius: 15px;
+  }
+
+  .attendees-card {
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    transition: 0.3s;
+  }
+
+  .attendees-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .attendee-row:hover {
+    background: rgba(13, 110, 253, 0.05);
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .add-btn {
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-weight: 600;
+  }
+
+  /* Status Pills */
+  .status-pill {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: white;
+    font-weight: 600;
+  }
+
+  .status-confirmed {
+    background: #198754 !important;
+  }
+
+  .status-pending {
+    background: #ffc107 !important;
+    color: #333;
+  }
+
+  .status-other {
+    background: #6c757d;
+  }
+
+  .action-btn {
+    border-radius: 8px !important;
+    transition: 0.2s;
+  }
+
+  .action-btn:hover {
+    transform: scale(1.1);
+  }
+</style>
