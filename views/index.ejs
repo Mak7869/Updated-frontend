@@ -1,6 +1,14 @@
 <% layout('layouts/boilerplate') -%>
 
 <style>
+  /* RAINBOW BACKGROUND ONLY */
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%) !important;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  /* SIMPLE STYLES - REVERTED TO BASIC */
   .text-gradient {
     background: linear-gradient(to right, #8b5cf6, #f97316, #3b82f6);
     -webkit-background-clip: text;
@@ -49,35 +57,27 @@
     color: white;
   }
 
-  body.dark {
+  body.dark-mode {
     background-color: #121212;
     color: #e0e0e0;
   }
-  body.dark .bg-light,
-  body.dark .bg-white {
+  body.dark-mode .bg-light,
+  body.dark-mode .bg-white {
     background-color: #1f1f1f;
     color: #e0e0e0;
   }
-  body.dark .counter-card,
-  body.dark .feature-card,
-  body.dark .step-card {
+  body.dark-mode .counter-card,
+  body.dark-mode .feature-card,
+  body.dark-mode .step-card {
     background-color: #2d2d2d;
     color: #e0e0e0;
   }
-  body.dark .modal-content {
+  body.dark-mode .modal-content {
     background-color: #1f1f1f;
     color: #e0e0e0;
   }
 </style>
 <body class="bg-light text-dark" id="body">
-  <!-- Dark Mode Toggle -->
-  <button
-    id="theme-toggle"
-    class="btn btn-light position-fixed top-0 end-0 m-3 rounded-circle shadow"
-    onclick="toggleTheme()"
-  >
-    <i class="fas fa-moon" id="theme-icon"></i>
-  </button>
 
   <!-- Hero Section -->
   <section
@@ -269,11 +269,9 @@
 
   <script>
     function toggleTheme() {
-      const body = document.getElementById("body");
-      const icon = document.getElementById("theme-icon");
-      body.classList.toggle("dark");
-      icon.classList.toggle("fa-moon");
-      icon.classList.toggle("fa-sun");
+      const newTheme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('theme', newTheme);
+      window.location.reload();
     }
 
     function animateCounter(id, target) {

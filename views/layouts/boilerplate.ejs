@@ -22,116 +22,347 @@
       rel="stylesheet"
     />
 
-    <!-- CUSTOM CSS -->
-    <link href="/style.css" rel="stylesheet" />
-
     <style>
-      /* WHITE NAVBAR (DEFAULT LIGHT MODE) */
+      /* RAINBOW BACKGROUND SAME AS LOGIN/REGISTER PAGES */
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%) !important;
+        background-attachment: fixed;
+        min-height: 100vh;
+      }
+
+      /* SLIGHTLY DARKER BLUE-GRAY BASE WITH MULTI-COLOR ACCENTS */
       .glass-nav {
-        background: #ffffff;
-        border-bottom: 1px solid #e5e5e5;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 50%, #64748b 100%);
+        border-bottom: 3px solid #667eea;
+        box-shadow: 0 5px 24px rgba(100, 126, 234, 0.20);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .glass-nav::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+        opacity: 0.15;
+        z-index: 0;
+      }
+
+      .glass-nav::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(255,255,255,0.3) 0%, transparent 30%, rgba(255,255,255,0.3) 70%, transparent 100%);
+        z-index: 1;
+      }
+
+      .glass-nav .container {
+        position: relative;
+        z-index: 2;
       }
 
       .nav-link {
-        color: #333 !important;
-        font-weight: 500;
-        transition: 0.2s ease;
+        color: #0f172a !important;
+        font-weight: 500 !important;
+        transition: 0.3s ease;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       }
 
       .nav-link:hover {
-        color: #0d6efd !important; /* Bootstrap blue */
-        transform: translateY(-2px);
+        color: #667eea !important;
+        transform: translateY(-2px) scale(1.02);
+        text-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
       }
 
-      /* BRAND GRADIENT REMOVED → NOW CLEAN BLUE */
+      /* BRAND WITH SAME GRADIENT AS HOME PAGE */
       .text-gradient {
-        color: #0d6efd !important;
+        background: linear-gradient(to right, #8b5cf6, #f97316, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         font-weight: 700;
         font-size: 28px;
       }
 
-      /* DARK MODE NAVBAR */
-      body.dark-mode .glass-nav {
-        background: #111;
-        border-bottom: 1px solid #222;
-        box-shadow: none;
+      /* WELCOME TEXT WITH GOOD CONTRAST */
+      .fw-semibold {
+        color: #334155 !important;
+        font-weight: 600 !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       }
 
-      body.dark-mode .nav-link {
-        color: #ddd !important;
+      /* LOGOUT BUTTON */
+      .nav-link[href="/logout"] {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+        border: 2px solid #991b1b !important;
+        color: white !important;
+        font-weight: 600 !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+        border-radius: 20px !important;
+        padding: 6px 16px !important;
+        margin: 0 4px !important;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3) !important;
+        transition: all 0.3s ease !important;
       }
 
-      body.dark-mode .nav-link:hover {
-        color: #8ab4ff !important;
+      .nav-link[href="/logout"]:hover {
+        background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
+        border-color: #7f1d1d !important;
+        transform: translateY(-1px) scale(1.05) !important;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5) !important;
       }
 
-      body.dark-mode .text-gradient {
-        color: #8ab4ff !important;
+      .nav-link[href="/logout"]:active {
+        transform: translateY(0) scale(0.98) !important;
+        box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4) !important;
       }
 
-      /* DARK MODE TOGGLE BUTTON */
-      .toggle-btn {
-        background: #f5f5f5;
-        border: 2px solid #ddd;
-        color: #111;
-        padding: 6px 10px;
-        border-radius: 50%;
-        transition: 0.3s ease;
-      }
-
-      .toggle-btn:hover {
-        background: #e7e7e7;
-      }
-
-      body.dark-mode .toggle-btn {
-        background: #222;
-        border-color: #444;
-        color: #fff;
-      }
-
-      body.dark-mode .toggle-btn:hover {
-        background: #333;
-      }
-
-      /* FOOTER SMALL FIX FOR WHITE THEME */
+      /* FOOTER WITH SAME BACKGROUND AS TOP STRIP */
       .footer {
-        background: #ffffff;
-        color: #333;
-        border-top: 1px solid #e5e5e5;
+        background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 50%, #64748b 100%);
+        color: #ffffff;
+        border-top: 3px solid #667eea;
+        box-shadow: 0 -5px 24px rgba(100, 126, 234, 0.20);
+        position: relative;
+        overflow: hidden;
       }
 
-      body.dark-mode .footer {
-        background: #121212;
-        color: #eee;
-        border-color: #333;
+      .footer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+        opacity: 0.15;
+        z-index: 0;
       }
+
+      .footer::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(255,255,255,0.3) 0%, transparent 30%, rgba(255,255,255,0.3) 70%, transparent 100%);
+        z-index: 1;
+      }
+
+      .footer .container {
+        position: relative;
+        z-index: 2;
+      }
+
+      .footer p {
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        font-weight: 500;
+        margin: 0;
+      }
+
+      /* RIPPLE EFFECT */
+      .ripple-effect {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        pointer-events: none;
+      }
+
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+
+      .btn, button {
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* ENHANCED HOVER EFFECTS */
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      /* LOADING STATES */
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      /* TOAST ENHANCEMENTS */
+      .toast {
+        backdrop-filter: blur(10px);
+        border: none !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      /* SPINNER ENHANCEMENT */
+      .spinner-border {
+        border-width: 0.3em;
+      }
+
+      /* CUSTOM REGISTER BUTTON FOR NAVBAR */
+      .btn-register {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: 2px solid #4c51bf !important;
+        color: white !important;
+        font-weight: 600 !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3) !important;
+        transition: all 0.3s ease !important;
+      }
+
+      .btn-register:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+        border-color: #3730a3 !important;
+        transform: translateY(-2px) scale(1.05) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5) !important;
+      }
+
+      .btn-register:active {
+        transform: translateY(0) scale(0.98) !important;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4) !important;
+      }
+
+      /* HIGHLIGHTED WORKING AREAS */
+      .main-content-container {
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-top: 2rem !important;
+        margin-bottom: 3rem !important;
+        box-shadow: inset 0 0 20px rgba(102, 126, 234, 0.1);
+      }
+
+      /* FORM HIGHLIGHT BOXES */
+      .form-highlight {
+        background: linear-gradient(135deg, #fff8f0 0%, #fff0f5 100%);
+        border: 2px solid #ff6b9d;
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);
+      }
+
+      /* DASHBOARD HIGHLIGHT AREAS */
+      .dashboard-analytics {
+        background: linear-gradient(135deg, #e8f4fd 0%, #d1e7f7 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 2px solid #4a90e2;
+        box-shadow: 0 6px 20px rgba(74, 144, 226, 0.15);
+      }
+
+      .dashboard-actions {
+        background: linear-gradient(135deg, #f0fff8 0%, #e6fff5 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 2px solid #2ecc71;
+        box-shadow: 0 6px 20px rgba(46, 204, 113, 0.15);
+      }
+
+      /* ADMIN HIGHLIGHT AREAS */
+      .admin-management {
+        background: linear-gradient(135deg, #fff5f5 0%, #ffeaea 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 2px solid #e74c3c;
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.15);
+      }
+
+      .admin-analytics {
+        background: linear-gradient(135deg, #f5f0ff 0%, #ede6ff 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 2px solid #9b59b6;
+        box-shadow: 0 6px 20px rgba(155, 89, 182, 0.15);
+      }
+
+      /* SEARCH AND FILTER HIGHLIGHT */
+      .search-filter-box {
+        background: linear-gradient(135deg, #fffef0 0%, #fffde6 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border: 2px solid #f39c12;
+        box-shadow: 0 4px 15px rgba(243, 156, 18, 0.1);
+      }
+
+      /* EVENT LIST HIGHLIGHT */
+      .event-list-container {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 2px solid #17a2b8;
+        box-shadow: 0 6px 20px rgba(23, 162, 184, 0.15);
+      }
+
+      /* USER PROFILE HIGHLIGHT */
+      .user-profile-box {
+        background: linear-gradient(135deg, #fef7ff 0%, #fceeff 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border: 2px solid #e91e63;
+        box-shadow: 0 4px 15px rgba(233, 30, 99, 0.1);
+      }
+
+      /* NOTIFICATION HIGHLIGHT */
+      .notification-center {
+        background: linear-gradient(135deg, #fff8e1 0%, #fff3c4 100%);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+        border: 2px solid #ff9800;
+        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.1);
+      }
+
+
     </style>
   </head>
 
-  <body class="light-mode">
+  <body>
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg glass-nav py-3">
       <div class="container">
         <a class="navbar-brand fw-bold text-gradient" href="/">NexEvent</a>
 
-        <button
-          class="navbar-toggler border-0"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <i class="fa-solid fa-bars text-white"></i>
-        </button>
-
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto align-items-center gap-3">
+          <ul class="navbar-nav me-auto">
+            <% if(typeof user !== 'undefined' && user && user.ROLE === 'admin') { %>
+            <li class="nav-item">
+              <a href="/admin" class="nav-link">Admin</a>
+            </li>
+            <% } else if(typeof user !== 'undefined' && user && user.ROLE === 'organizer') { %>
+            <li class="nav-item">
+              <a href="/dashboard" class="nav-link">Dashboard</a>
+            </li>
+            <% } %>
             <li class="nav-item">
               <a href="/events" class="nav-link">Events</a>
             </li>
-
+          </ul>
+          <ul class="navbar-nav ms-auto align-items-center gap-3">
             <% if(typeof user !== 'undefined' && user) { %>
-            <li class="nav-item text-white fw-semibold">
+            <li class="nav-item fw-semibold">
               Welcome, <%= user.USERNAME %>
             </li>
             <li class="nav-item">
@@ -145,42 +376,189 @@
             <li class="nav-item">
               <a
                 href="/register"
-                class="nav-link btn btn-primary px-3 rounded-pill text-white"
+                class="nav-link btn btn-register px-3 rounded-pill text-white"
                 >Register</a
               >
             </li>
             <% } %>
-
-            <!-- DARK MODE TOGGLE -->
-            <li class="nav-item ms-3">
-              <button id="themeToggle" class="btn toggle-btn">
-                <i class="fa-solid fa-moon"></i>
-              </button>
-            </li>
           </ul>
         </div>
+
+        <button
+          class="navbar-toggler border-0"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <i class="fa-solid fa-bars text-white"></i>
+        </button>
       </div>
     </nav>
 
     <!-- MAIN CONTENT -->
-    <div class="container mt-4 mb-5"><%- body %></div>
+    <div class="main-content-container container mt-4 mb-5"><%- body %></div>
 
     <!-- FOOTER -->
     <footer class="footer">
       <div class="container text-center py-3">
-        <p class="mb-0">© 2025 NexEvent | Developed with ❤️</p>
+        <p class="mb-0">© 2025 NexEvent</p>
       </div>
     </footer>
 
     <!-- BOOTSTRAP JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- DARK MODE SCRIPT -->
+    <!-- TOAST NOTIFICATIONS -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+      <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="fas fa-check-circle me-2"></i>
+            <span id="successMessage">Success!</span>
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      </div>
+
+      <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span id="errorMessage">Error occurred!</span>
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOADING SPINNER -->
+    <div id="loadingSpinner" class="d-none">
+      <div class="spinner-overlay position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+           style="background: rgba(0,0,0,0.5); z-index: 9999;">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE SCRIPTS -->
     <script>
-      const toggleBtn = document.getElementById("themeToggle");
-      toggleBtn.addEventListener("click", () => {
-        document.body.classList.toggle("dark-mode");
+      // Interactive Functions
+      window.NexEvent = {
+        // Toast Notifications
+        showToast: function(message, type = 'success') {
+          const toastId = type === 'success' ? 'successToast' : 'errorToast';
+          const messageId = type === 'success' ? 'successMessage' : 'errorMessage';
+
+          document.getElementById(messageId).textContent = message;
+          const toast = new bootstrap.Toast(document.getElementById(toastId));
+          toast.show();
+        },
+
+        // Loading Spinner
+        showLoading: function() {
+          document.getElementById('loadingSpinner').classList.remove('d-none');
+        },
+
+        hideLoading: function() {
+          document.getElementById('loadingSpinner').classList.add('d-none');
+        },
+
+        // Smooth Scrolling
+        scrollTo: function(elementId) {
+          document.getElementById(elementId)?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        },
+
+        // Confirmation Dialogs
+        confirm: function(message, callback) {
+          if (confirm(message)) {
+            callback();
+          }
+        },
+
+        // Debounced Search
+        debounce: function(func, wait) {
+          let timeout;
+          return function executedFunction(...args) {
+            const later = () => {
+              clearTimeout(timeout);
+              func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+          };
+        },
+
+        // Animate Counter
+        animateCounter: function(id, target, duration = 2000) {
+          const element = document.getElementById(id);
+          if (!element) return;
+
+          const start = parseInt(element.textContent) || 0;
+          const increment = target / (duration / 16);
+          let current = start;
+
+          const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+              element.textContent = target;
+              clearInterval(timer);
+            } else {
+              element.textContent = Math.floor(current);
+            }
+          }, 16);
+        },
+
+        // Form Enhancement
+        enhanceForms: function() {
+          // Add loading states to forms
+          document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+              const submitBtn = form.querySelector('button[type="submit"]');
+              if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+              }
+            });
+          });
+        },
+
+        // Initialize all interactive features
+        init: function() {
+          this.enhanceForms();
+
+          // Add tooltips to buttons
+          const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+          tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+          });
+
+          // Add ripple effect to buttons
+          document.querySelectorAll('.btn, button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+              const ripple = document.createElement('span');
+              ripple.className = 'ripple-effect';
+              ripple.style.left = (e.offsetX - 10) + 'px';
+              ripple.style.top = (e.offsetY - 10) + 'px';
+              this.appendChild(ripple);
+
+              setTimeout(() => {
+                ripple.remove();
+              }, 600);
+            });
+          });
+        }
+      };
+
+      // Initialize when DOM is ready
+      document.addEventListener('DOMContentLoaded', function() {
+        window.NexEvent.init();
       });
     </script>
+
+
   </body>
 </html>

@@ -66,6 +66,7 @@ app.use(passport.session());
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.set('view cache', false);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(methodOverride('_method'));
@@ -86,9 +87,15 @@ const getAttendingEventIds = (userId) => {
   });
 };
 
-// Redirect root to events
+// Redirect root to events or dashboard based on user role
 app.get('/', (req, res) => {
-  res.render('index.ejs');
+  if (req.user && req.user.ROLE === 'admin') {
+    res.redirect('/admin');
+  } else if (req.user && req.user.ROLE === 'organizer') {
+    res.redirect('/dashboard');
+  } else {
+    res.render('index.ejs');
+  }
 });
 
 // Auth routes
@@ -102,7 +109,7 @@ app.get('/register', (req, res) => {
 
 app.post('/register', async (req, res) => {
   const { username, email, password, role } = req.body;
-  if (!['attendee', 'organizer'].includes(role)) {
+  if (!['attendee', 'organizer', 'admin'].includes(role)) {
     return res.render('register', { error: 'Invalid role selected' });
   }
   try {
@@ -138,13 +145,84 @@ app.get('/logout', (req, res) => {
 // List all events
 app.get('/events', async (req, res) => {
   try {
-    const [events] = await connection.promise().query('SELECT * FROM EVENT');
+    let sql = `
+      SELECT
+        e.*,
+        c.CATEGORY_NAME,
+        GROUP_CONCAT(t.TAG_NAME) as TAGS
+      FROM EVENT e
+      LEFT JOIN CATEGORY c ON e.CATEGORY_ID = c.CATEGORY_ID
+      LEFT JOIN EVENT_TAG et ON e.EVENT_ID = et.EVENT_ID
+      LEFT JOIN TAG t ON et.TAG_ID = t.TAG_ID
+      WHERE 1=1
+    `;
+    let params = [];
+    let conditions = [];
+    let groupBy = ' GROUP BY e.EVENT_ID';
+
+    // User-based filtering
+    if (req.user && req.user.ROLE === 'attendee') {
+      conditions.push('STATUS = ?');
+      params.push('published');
+    } else if (req.user && req.user.ROLE === 'organizer') {
+      conditions.push('(ORGANIZER_ID = ? OR STATUS IN (?, ?, ?))');
+      params.push(req.user.USER_ID, 'draft', 'published', 'cancelled');
+    } else {
+      // For non-logged-in users, only show published events
+      conditions.push('STATUS = ?');
+      params.push('published');
+    }
+
+    // Search functionality
+    if (req.query.search && req.query.search.trim()) {
+      conditions.push('(EVENT_NAME LIKE ? OR DESCRIPTION LIKE ?)');
+      const searchTerm = `%${req.query.search.trim()}%`;
+      params.push(searchTerm, searchTerm);
+    }
+
+    // Filter by date
+    if (req.query.filter === 'upcoming') {
+      conditions.push('EVENT_DATE >= CURDATE()');
+    } else if (req.query.filter === 'past') {
+      conditions.push('EVENT_DATE < CURDATE()');
+    }
+
+    // Filter by category
+    if (req.query.category && req.query.category !== '') {
+      conditions.push('e.CATEGORY_ID = ?');
+      params.push(req.query.category);
+    }
+
+    // Apply conditions to SQL
+    if (conditions.length > 0) {
+      sql += ' AND ' + conditions.join(' AND ');
+    }
+
+    // Group by for aggregate functions
+    sql += ' GROUP BY e.EVENT_ID';
+
+    // Sort order - default to ascending (oldest first)
+    const sortOrder = req.query.sort === 'desc' ? 'DESC' : 'ASC';
+    sql += ` ORDER BY e.CREATED_AT ${sortOrder}`;
+
+    const [events] = await connection.promise().query(sql, params);
     let attendingEvents = [];
     if (req.user) {
       attendingEvents = await getAttendingEventIds(req.user.USER_ID);
     }
-    res.render('events', { events, user: req.user, attendingEvents });
+
+    // Pass search and filter values to template for form persistence
+    res.render('events', {
+      events,
+      user: req.user,
+      attendingEvents,
+      searchQuery: req.query.search || '',
+      activeFilter: req.query.filter || '',
+      activeCategory: req.query.category || '',
+      activeSort: req.query.sort || 'asc'
+    });
   } catch (err) {
+    console.error('Error fetching events:', err);
     res.send('Error fetching events');
   }
 });
@@ -156,12 +234,58 @@ app.get('/events/new', ensureAuthenticated, (req, res) => {
 
 // Create event
 app.post('/events', ensureAuthenticated, (req, res) => {
-  const { eventname, eventdate, location, description } = req.body;
+  const { eventname, eventdate, location, description, category, tags } = req.body;
   const userId = req.user.USER_ID;
-  const sql = 'INSERT INTO EVENT (EVENT_NAME, EVENT_DATE, LOCATION, DESCRIPTION, ORGANIZER_ID) VALUES (?, ?, ?, ?, ?)';
-  connection.query(sql, [eventname, eventdate, location, description, userId], err => {
+
+  // Insert event
+  const sql = 'INSERT INTO EVENT (EVENT_NAME, EVENT_DATE, LOCATION, DESCRIPTION, ORGANIZER_ID, CATEGORY_ID, STATUS) VALUES (?, ?, ?, ?, ?, ?, ?)';
+  connection.query(sql, [eventname, eventdate, location, description, userId, category || null, 'draft'], (err, result) => {
     if (err) return res.send('Error creating event');
-    res.redirect('/events');
+
+    const eventId = result.insertId;
+
+    // Handle tags if provided (split comma-separated string)
+    if (tags && typeof tags === 'string' && tags.trim()) {
+      const tagNames = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+
+      if (tagNames.length > 0) {
+        const tagPromises = tagNames.map(tagName => {
+          return new Promise((resolve, reject) => {
+            // First, try to find existing tag or create new one
+            connection.query('INSERT IGNORE INTO TAG (TAG_NAME) VALUES (?)', [tagName], (err) => {
+              if (err) return reject(err);
+
+              // Get tag ID
+              connection.query('SELECT TAG_ID FROM TAG WHERE TAG_NAME = ?', [tagName], (err, tagResults) => {
+                if (err) return reject(err);
+
+                if (tagResults.length > 0) {
+                  // Link event to tag
+                  connection.query('INSERT IGNORE INTO EVENT_TAG (EVENT_ID, TAG_ID) VALUES (?, ?)',
+                    [eventId, tagResults[0].TAG_ID], (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                  });
+                } else {
+                  resolve();
+                }
+              });
+            });
+          });
+        });
+
+        Promise.all(tagPromises).then(() => {
+          res.redirect('/events');
+        }).catch(err => {
+          console.error('Error saving tags:', err);
+          res.redirect('/events');
+        });
+      } else {
+        res.redirect('/events');
+      }
+    } else {
+      res.redirect('/events');
+    }
   });
 });
 
@@ -196,6 +320,40 @@ app.delete('/events/:id', ensureAuthenticated, (req, res) => {
     if (results[0].ORGANIZER_ID !== req.user.USER_ID) return res.send('Unauthorized');
     connection.query('DELETE FROM EVENT WHERE EVENT_ID = ?', [req.params.id], err => {
       if (err) return res.send('Error deleting event');
+      res.redirect('/events');
+    });
+  });
+});
+
+// Event status management routes
+app.post('/events/:id/publish', ensureAuthenticated, (req, res) => {
+  connection.query('SELECT ORGANIZER_ID FROM EVENT WHERE EVENT_ID = ?', [req.params.id], (err, results) => {
+    if (err || results.length === 0) return res.send('Event not found');
+    if (results[0].ORGANIZER_ID !== req.user.USER_ID) return res.send('Unauthorized');
+    connection.query('UPDATE EVENT SET STATUS = ? WHERE EVENT_ID = ?', ['published', req.params.id], err => {
+      if (err) return res.send('Error publishing event');
+      res.redirect('/events');
+    });
+  });
+});
+
+app.post('/events/:id/unpublish', ensureAuthenticated, (req, res) => {
+  connection.query('SELECT ORGANIZER_ID FROM EVENT WHERE EVENT_ID = ?', [req.params.id], (err, results) => {
+    if (err || results.length === 0) return res.send('Event not found');
+    if (results[0].ORGANIZER_ID !== req.user.USER_ID) return res.send('Unauthorized');
+    connection.query('UPDATE EVENT SET STATUS = ? WHERE EVENT_ID = ?', ['draft', req.params.id], err => {
+      if (err) return res.send('Error unpublishing event');
+      res.redirect('/events');
+    });
+  });
+});
+
+app.post('/events/:id/cancel', ensureAuthenticated, (req, res) => {
+  connection.query('SELECT ORGANIZER_ID FROM EVENT WHERE EVENT_ID = ?', [req.params.id], (err, results) => {
+    if (err || results.length === 0) return res.send('Event not found');
+    if (results[0].ORGANIZER_ID !== req.user.USER_ID) return res.send('Unauthorized');
+    connection.query('UPDATE EVENT SET STATUS = ? WHERE EVENT_ID = ?', ['cancelled', req.params.id], err => {
+      if (err) return res.send('Error cancelling event');
       res.redirect('/events');
     });
   });
@@ -341,6 +499,163 @@ app.delete('/attendees/:id', ensureAuthenticated, (req, res) => {
       res.redirect(eventId ? `/events/${eventId}/attendees` : '/attendees');
     });
   });
+});
+
+// Organizer Dashboard
+app.get('/dashboard', ensureAuthenticated, async (req, res) => {
+  if (req.user.ROLE !== 'organizer') {
+    return res.redirect('/events');
+  }
+
+  try {
+    const organizerId = req.user.USER_ID;
+
+    // Get total events created
+    const [totalEventsResult] = await connection.promise().query(
+      'SELECT COUNT(*) as total FROM EVENT WHERE ORGANIZER_ID = ?',
+      [organizerId]
+    );
+    const totalEvents = totalEventsResult[0].total;
+
+    // Get total attendees across all events
+    const [totalAttendeesResult] = await connection.promise().query(
+      'SELECT COUNT(*) as total FROM ATTENDEE a JOIN EVENT e ON a.EVENT_ID = e.EVENT_ID WHERE e.ORGANIZER_ID = ?',
+      [organizerId]
+    );
+    const totalAttendees = totalAttendeesResult[0].total;
+
+    // Get upcoming events count
+    const [upcomingEventsResult] = await connection.promise().query(
+      'SELECT COUNT(*) as total FROM EVENT WHERE ORGANIZER_ID = ? AND EVENT_DATE >= CURDATE() AND STATUS != "cancelled"',
+      [organizerId]
+    );
+    const upcomingEvents = upcomingEventsResult[0].total;
+
+    // Get past events count
+    const [pastEventsResult] = await connection.promise().query(
+      'SELECT COUNT(*) as total FROM EVENT WHERE ORGANIZER_ID = ? AND EVENT_DATE < CURDATE()',
+      [organizerId]
+    );
+    const pastEvents = pastEventsResult[0].total;
+
+    // Get top 3 most registered events
+    const [topEventsResult] = await connection.promise().query(`
+      SELECT
+        e.EVENT_NAME,
+        COUNT(a.ATTENDEE_ID) as attendee_count
+      FROM EVENT e
+      LEFT JOIN ATTENDEE a ON e.EVENT_ID = a.EVENT_ID
+      WHERE e.ORGANIZER_ID = ?
+      GROUP BY e.EVENT_ID, e.EVENT_NAME
+      ORDER BY attendee_count DESC
+      LIMIT 3
+    `, [organizerId]);
+
+    const stats = {
+      totalEvents,
+      totalAttendees,
+      upcomingEvents,
+      pastEvents,
+      topEvents: topEventsResult
+    };
+
+    res.render('dashboard', { user: req.user, stats });
+  } catch (err) {
+    console.error('Error fetching dashboard stats:', err);
+    res.send('Error loading dashboard');
+  }
+});
+
+// Admin Dashboard
+app.get('/admin', ensureAuthenticated, async (req, res) => {
+  if (req.user.ROLE !== 'admin') {
+    return res.redirect('/events');
+  }
+
+  try {
+    // Get system-wide statistics
+    const [totalUsersResult] = await connection.promise().query('SELECT COUNT(*) as total FROM USER');
+    const totalUsers = totalUsersResult[0].total;
+
+    const [totalEventsResult] = await connection.promise().query('SELECT COUNT(*) as total FROM EVENT');
+    const totalEvents = totalEventsResult[0].total;
+
+    const [totalAttendeesResult] = await connection.promise().query('SELECT COUNT(*) as total FROM ATTENDEE');
+    const totalAttendees = totalAttendeesResult[0].total;
+
+    // Get user distribution by role
+    const [userRolesResult] = await connection.promise().query(
+      'SELECT ROLE, COUNT(*) as count FROM USER GROUP BY ROLE'
+    );
+
+    // Get recent events (last 10)
+    const [recentEventsResult] = await connection.promise().query(
+      'SELECT e.*, u.USERNAME as ORGANIZER_NAME FROM EVENT e JOIN USER u ON e.ORGANIZER_ID = u.USER_ID ORDER BY e.CREATED_AT DESC LIMIT 10'
+    );
+
+    // Get events by status
+    const [eventStatusResult] = await connection.promise().query(
+      'SELECT STATUS, COUNT(*) as count FROM EVENT GROUP BY STATUS'
+    );
+
+    // Get top categories
+    const [topCategoriesResult] = await connection.promise().query(`
+      SELECT c.CATEGORY_NAME, COUNT(e.EVENT_ID) as event_count
+      FROM CATEGORY c
+      LEFT JOIN EVENT e ON c.CATEGORY_ID = e.CATEGORY_ID
+      GROUP BY c.CATEGORY_ID, c.CATEGORY_NAME
+      ORDER BY event_count DESC
+      LIMIT 5
+    `);
+
+    const stats = {
+      totalUsers,
+      totalEvents,
+      totalAttendees,
+      userRoles: userRolesResult,
+      recentEvents: recentEventsResult,
+      eventStatus: eventStatusResult,
+      topCategories: topCategoriesResult
+    };
+
+    res.render('admin', { user: req.user, stats });
+  } catch (err) {
+    console.error('Error fetching admin stats:', err);
+    res.send('Error loading admin dashboard');
+  }
+});
+
+// Admin Routes for Management
+app.get('/admin/users', ensureAuthenticated, async (req, res) => {
+  if (req.user.ROLE !== 'admin') return res.redirect('/events');
+
+  try {
+    const [users] = await connection.promise().query(
+      'SELECT USER_ID, USERNAME, EMAIL, ROLE, CREATED_AT FROM USER ORDER BY CREATED_AT DESC'
+    );
+    res.render('admin-users', { user: req.user, users });
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.send('Error loading users');
+  }
+});
+
+app.get('/admin/events', ensureAuthenticated, async (req, res) => {
+  if (req.user.ROLE !== 'admin') return res.redirect('/events');
+
+  try {
+    const [events] = await connection.promise().query(`
+      SELECT e.*, u.USERNAME as ORGANIZER_NAME, c.CATEGORY_NAME
+      FROM EVENT e
+      JOIN USER u ON e.ORGANIZER_ID = u.USER_ID
+      LEFT JOIN CATEGORY c ON e.CATEGORY_ID = c.CATEGORY_ID
+      ORDER BY e.CREATED_AT DESC
+    `);
+    res.render('admin-events', { user: req.user, events });
+  } catch (err) {
+    console.error('Error fetching events:', err);
+    res.send('Error loading events');
+  }
 });
 
 // Start server

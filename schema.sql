@@ -28,6 +28,22 @@ CREATE TABLE IF NOT EXISTS CATEGORY (
   CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tags for event keywords
+CREATE TABLE IF NOT EXISTS TAG (
+  TAG_ID INT PRIMARY KEY AUTO_INCREMENT,
+  TAG_NAME VARCHAR(50) UNIQUE NOT NULL,
+  CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Junction table for event tags (many-to-many relationship)
+CREATE TABLE IF NOT EXISTS EVENT_TAG (
+  EVENT_ID INT NOT NULL,
+  TAG_ID INT NOT NULL,
+  PRIMARY KEY (EVENT_ID, TAG_ID),
+  FOREIGN KEY (EVENT_ID) REFERENCES EVENT(EVENT_ID) ON DELETE CASCADE,
+  FOREIGN KEY (TAG_ID) REFERENCES TAG(TAG_ID) ON DELETE CASCADE
+);
+
 -- Improved Events table with foreign keys
 CREATE TABLE IF NOT EXISTS EVENT (
   EVENT_ID INT PRIMARY KEY AUTO_INCREMENT,
@@ -39,6 +55,7 @@ CREATE TABLE IF NOT EXISTS EVENT (
   VENUE_ID INT,
   CATEGORY_ID INT,
   CAPACITY INT,
+  STATUS ENUM('draft', 'published', 'cancelled') DEFAULT 'draft',
   CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UPDATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (ORGANIZER_ID) REFERENCES USER(USER_ID) ON DELETE SET NULL,
@@ -60,3 +77,19 @@ CREATE TABLE IF NOT EXISTS ATTENDEE (
   FOREIGN KEY (USER_ID) REFERENCES USER(USER_ID) ON DELETE SET NULL,
   FOREIGN KEY (EVENT_ID) REFERENCES EVENT(EVENT_ID) ON DELETE CASCADE
 );
+
+-- Insert default categories
+INSERT IGNORE INTO CATEGORY (CATEGORY_NAME, DESCRIPTION) VALUES
+('Workshop', 'Hands-on learning sessions and practical training'),
+('Seminar', 'Educational talks and presentations'),
+('Meetup', 'Casual networking and community gatherings'),
+('Concert', 'Live music performances and entertainment'),
+('Conference', 'Large-scale professional gatherings'),
+('Webinar', 'Online educational sessions'),
+('Exhibition', 'Product showcases and displays'),
+('Sports', 'Athletic events and competitions');
+
+-- Insert default tags
+INSERT IGNORE INTO TAG (TAG_NAME) VALUES
+('AI'), ('Networking'), ('Technology'), ('Business'), ('Music'), ('Art'), ('Health'), ('Education'),
+('Career'), ('Innovation'), ('Startup'), ('Design'), ('Marketing'), ('Finance'), ('Science'), ('Engineering');

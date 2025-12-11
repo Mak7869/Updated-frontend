@@ -1,153 +1,181 @@
 <% layout('layouts/boilerplate') %>
 
-<div class="max-w-3xl mx-auto mt-10 mb-16 px-6">
+<!-- Header -->
+<h1 class="display-4 fw-bold mb-4">
+  <%= entity %> Form
+</h1>
 
-  <!-- Header -->
-  <h1 class="text-4xl font-bold text-gray-800 mb-8 tracking-tight">
-    <%= entity %> Form
-  </h1>
+<!-- Form Container -->
+<div class="bg-white shadow rounded p-4 p-md-5">
+  <form action="<%= action %>" method="POST">
 
-  <!-- Form Container -->
-  <div class="bg-white/80 backdrop-blur-xl shadow-2xl rounded-2xl p-8 border border-gray-200">
-    
-    <form action="<%= action %>" method="POST" class="space-y-6">
+    <% if (entity === 'Event') { %>
 
-      <% if (entity === 'Event') { %>
-
-        <!-- Event Name -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Name</label>
-          <input 
-            type="text" 
-            name="eventname" 
-            value="<%= event.EVENT_NAME || '' %>" 
-            required
-            class="w-full px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          />
-        </div>
-
-        <!-- Event Date -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Date & Time</label>
-          <input 
-            type="datetime-local" 
-            name="eventdate"
-            value="<%= event.EVENT_DATE ? (new Date(event.EVENT_DATE)).toISOString().slice(0,16) : '' %>"
-            required
-            class="w-full px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          />
-        </div>
-
-        <!-- Location -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Location</label>
-          <input 
-            type="text" 
-            name="location"
-            value="<%= event.LOCATION || '' %>"
-            class="w-full px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          />
-        </div>
-
-        <!-- Description -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Description</label>
-          <textarea 
-            name="description"
-            class="w-full px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          ><%= event.DESCRIPTION || '' %></textarea>
-        </div>
-
-      <% } else if (entity === 'Attendee') { %>
-
-        <!-- Name -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Name</label>
-          <input 
-            type="text" 
-            name="name"
-            value="<%= attendee.NAME || '' %>"
-            required
-            class="w-full px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          />
-        </div>
-
-        <!-- Email -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Email</label>
-          <input 
-            type="email" 
-            name="email"
-            value="<%= attendee.EMAIL || '' %>"
-            class="w-full px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          />
-        </div>
-
-        <!-- Number -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Number</label>
-          <input 
-            type="text" 
-            name="number"
-            value="<%= attendee.NUMBER || '' %>"
-            required
-            class="w-full px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          />
-        </div>
-
-        <!-- Event Select -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Event</label>
-          <select 
-            name="eventid" 
-            required 
-            class="w-full px-4 py-2 rounded-xl border border-gray-300 shadow-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          >
-            <% events.forEach(e => { %>
-              <option 
-                value="<%= e.EVENT_ID %>"
-                <%= attendee.EVENT_ID === e.EVENT_ID ? 'selected' : '' %>
-              >
-                <%= e.EVENT_NAME %>
-              </option>
-            <% }) %>
-          </select>
-        </div>
-
-        <!-- Status -->
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">Status</label>
-          <input 
-            type="text" 
-            name="status"
-            value="<%= attendee.STATUS || 'registered' %>"
-            class="w-full px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          />
-        </div>
-
-      <% } %>
-
-      <!-- Buttons Section -->
-      <div class="flex justify-between items-center pt-4">
-
-        <!-- Back Button -->
-        <a 
-          href="<%= entity === 'Event' ? '/events' : (attendee.EVENT_ID ? '/events/' + attendee.EVENT_ID + '/attendees' : '/attendees') %>"
-          class="text-indigo-600 hover:text-indigo-800 text-2xl transition"
-        >
-          <i class="fa-solid fa-arrow-left"></i>
-        </a>
-
-        <!-- Submit Button -->
-        <button 
-          type="submit"
-          class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-xl shadow-md hover:bg-indigo-700 transition-all duration-300"
-        >
-          Submit
-        </button>
-
+      <!-- Event Name -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Name</label>
+        <input
+          type="text"
+          name="eventname"
+          value="<%= event.EVENT_NAME || '' %>"
+          required
+          class="form-control"
+        />
       </div>
 
-    </form>
-  </div>
+      <!-- Event Date -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Date & Time</label>
+        <input
+          type="datetime-local"
+          name="eventdate"
+          value="<%= event.EVENT_DATE ? (new Date(event.EVENT_DATE)).toISOString().slice(0,16) : '' %>"
+          required
+          class="form-control"
+        />
+      </div>
+
+      <!-- Location -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Location</label>
+        <input
+          type="text"
+          name="location"
+          value="<%= event.LOCATION || '' %>"
+          class="form-control"
+        />
+      </div>
+
+      <!-- Category -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Category</label>
+        <select name="category" class="form-select">
+          <option value="">Select a category (optional)</option>
+          <option value="1" <%= (event.CATEGORY_ID == 1) ? 'selected' : '' %>>Workshop</option>
+          <option value="2" <%= (event.CATEGORY_ID == 2) ? 'selected' : '' %>>Seminar</option>
+          <option value="3" <%= (event.CATEGORY_ID == 3) ? 'selected' : '' %>>Meetup</option>
+          <option value="4" <%= (event.CATEGORY_ID == 4) ? 'selected' : '' %>>Concert</option>
+          <option value="5" <%= (event.CATEGORY_ID == 5) ? 'selected' : '' %>>Conference</option>
+          <option value="6" <%= (event.CATEGORY_ID == 6) ? 'selected' : '' %>>Webinar</option>
+          <option value="7" <%= (event.CATEGORY_ID == 7) ? 'selected' : '' %>>Exhibition</option>
+          <option value="8" <%= (event.CATEGORY_ID == 8) ? 'selected' : '' %>>Sports</option>
+          <option value="9" <%= (event.CATEGORY_ID == 9) ? 'selected' : '' %>>Wedding</option>
+          <option value="10" <%= (event.CATEGORY_ID == 10) ? 'selected' : '' %>>Birthday Party</option>
+        </select>
+      </div>
+
+      <!-- Tags -->
+      <div class="mb-4">
+        <label class="form-label fw-bold">Tags (separate with commas)</label>
+        <input
+          type="text"
+          name="tags"
+          value="<%= typeof eventTags !== 'undefined' ? eventTags.join(', ') : '' %>"
+          class="form-control"
+          placeholder="e.g., AI, Networking, Technology"
+        />
+        <div class="form-text">Add relevant keywords to help attendees find your event</div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-4">
+        <label class="form-label fw-bold">Description</label>
+        <textarea
+          name="description"
+          class="form-control"
+          rows="3"
+        ><%= event.DESCRIPTION || '' %></textarea>
+      </div>
+
+    <% } else if (entity === 'Attendee') { %>
+
+      <!-- Name -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Name</label>
+        <input
+          type="text"
+          name="name"
+          value="<%= attendee.NAME || '' %>"
+          required
+          class="form-control"
+        />
+      </div>
+
+      <!-- Email -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Email</label>
+        <input
+          type="email"
+          name="email"
+          value="<%= attendee.EMAIL || '' %>"
+          class="form-control"
+        />
+      </div>
+
+      <!-- Number -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Number</label>
+        <input
+          type="text"
+          name="number"
+          value="<%= attendee.NUMBER || '' %>"
+          required
+          class="form-control"
+        />
+      </div>
+
+      <!-- Event Select -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Event</label>
+        <select
+          name="eventid"
+          required
+          class="form-select"
+        >
+          <% events.forEach(e => { %>
+            <option
+              value="<%= e.EVENT_ID %>"
+              <%= attendee.EVENT_ID === e.EVENT_ID ? 'selected' : '' %>
+            >
+              <%= e.EVENT_NAME %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <!-- Status -->
+      <div class="mb-4">
+        <label class="form-label fw-bold">Status</label>
+        <input
+          type="text"
+          name="status"
+          value="<%= attendee.STATUS || 'registered' %>"
+          class="form-control"
+        />
+      </div>
+
+    <% } %>
+
+    <!-- Buttons Section -->
+    <div class="d-flex justify-content-between align-items-center pt-3">
+
+      <!-- Back Button -->
+      <a
+        href="<%= entity === 'Event' ? '/events' : (attendee.EVENT_ID ? '/events/' + attendee.EVENT_ID + '/attendees' : '/attendees') %>"
+        class="btn btn-outline-secondary"
+      >
+        <i class="fas fa-arrow-left me-2"></i>Back
+      </a>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn btn-primary"
+      >
+        Submit
+      </button>
+
+    </div>
+
+  </form>
 </div>

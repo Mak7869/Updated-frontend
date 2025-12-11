@@ -1,0 +1,270 @@
+<% layout('layouts/boilerplate') %>
+
+<!-- Dashboard Header -->
+<div class="container">
+  <div class="page-header text-center py-4 mb-5 shadow-sm rounded">
+    <h1 class="fw-bold text-white">
+      📊 Organizer Dashboard
+    </h1>
+    <p class="text-white-50 mb-0">Welcome back, <%= user.USERNAME %>! Here's your event analytics overview.</p>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="dashboard-analytics">
+  <div class="row g-4">
+    <!-- Total Events -->
+    <div class="col-lg-3 col-md-6">
+      <div class="stat-card card h-100 border-0 shadow-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="card-body text-center p-4">
+          <div class="stat-icon mb-3">
+            <i class="fas fa-calendar-alt fa-3x text-white"></i>
+          </div>
+          <h2 class="stat-number display-4 fw-bold text-white mb-2" id="totalEvents"><%= stats.totalEvents %></h2>
+          <h5 class="stat-label card-title fw-semibold mb-0 text-white">Total Events</h5>
+          <small class="text-white-50">Events you've created</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Attendees -->
+    <div class="col-lg-3 col-md-6">
+      <div class="stat-card card h-100 border-0 shadow-lg" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+        <div class="card-body text-center p-4">
+          <div class="stat-icon mb-3">
+            <i class="fas fa-users fa-3x text-white"></i>
+          </div>
+          <h2 class="stat-number display-4 fw-bold text-white mb-2"><%= stats.totalAttendees %></h2>
+          <h5 class="stat-label card-title fw-semibold mb-0 text-white">Total Attendees</h5>
+          <small class="text-white-50">People registered for your events</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="col-lg-3 col-md-6">
+      <div class="stat-card card h-100 border-0 shadow-lg" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+        <div class="card-body text-center p-4">
+          <div class="stat-icon mb-3">
+            <i class="fas fa-clock fa-3x text-white"></i>
+          </div>
+          <h2 class="stat-number display-4 fw-bold text-white mb-2"><%= stats.upcomingEvents %></h2>
+          <h5 class="stat-label card-title fw-semibold mb-0 text-white">Upcoming Events</h5>
+          <small class="text-white-50">Events scheduled for the future</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Past Events -->
+    <div class="col-lg-3 col-md-6">
+      <div class="stat-card card h-100 border-0 shadow-lg" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white;">
+        <div class="card-body text-center p-4">
+          <div class="stat-icon mb-3">
+            <i class="fas fa-history fa-3x text-white"></i>
+          </div>
+          <h2 class="stat-number display-4 fw-bold text-white mb-2"><%= stats.pastEvents %></h2>
+          <h5 class="stat-label card-title fw-semibold mb-0 text-white">Past Events</h5>
+          <small class="text-white-50">Completed events</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Top Events Section -->
+<% if(stats.topEvents && stats.topEvents.length > 0) { %>
+<div class="container mb-5">
+  <div class="card border-0 shadow-lg">
+    <div class="card-header bg-gradient-primary text-white">
+      <h4 class="mb-0">
+        <i class="fas fa-trophy me-2"></i>
+        Top Performing Events
+      </h4>
+    </div>
+    <div class="card-body p-4">
+      <div class="row g-4">
+        <% stats.topEvents.forEach((event, index) => { %>
+        <div class="col-md-4">
+          <div class="top-event-card card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+              <div class="rank-badge mb-3">
+                <% if(index === 0) { %>
+                  <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                    🥇 #1 Most Popular
+                  </span>
+                <% } else if(index === 1) { %>
+                  <span class="badge bg-secondary fs-6 px-3 py-2">
+                    🥈 #2 Runner-up
+                  </span>
+                <% } else { %>
+                  <span class="badge bg-bronze fs-6 px-3 py-2">
+                    🥉 #3 Third Place
+                  </span>
+                <% } %>
+              </div>
+              <h5 class="event-title fw-bold mb-3"><%= event.EVENT_NAME %></h5>
+              <div class="attendee-count">
+                <i class="fas fa-users text-primary me-2"></i>
+                <span class="h4 fw-bold text-primary"><%= event.attendee_count %></span>
+                <small class="text-muted d-block">attendees</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<!-- Quick Actions -->
+<div class="dashboard-actions">
+  <div class="row g-3">
+    <div class="col-md-3">
+      <a href="/events/new" class="btn btn-primary w-100 py-3">
+        <i class="fas fa-plus-circle me-2"></i>
+        Create Event
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="/events" class="btn btn-outline-primary w-100 py-3">
+        <i class="fas fa-list me-2"></i>
+        Manage Events
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="/events?filter=upcoming" class="btn btn-outline-warning w-100 py-3">
+        <i class="fas fa-clock me-2"></i>
+        Upcoming Events
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="/events?filter=past" class="btn btn-outline-info w-100 py-3">
+        <i class="fas fa-history me-2"></i>
+        Past Events
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+  .page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+  }
+
+  .stat-card {
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  }
+
+  .stat-icon {
+    opacity: 0.8;
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .stat-label {
+    color: #6c757d;
+    font-size: 1rem;
+  }
+
+  .top-event-card {
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    transition: transform 0.3s ease;
+  }
+
+  .top-event-card:hover {
+    transform: translateY(-3px);
+  }
+
+  .rank-badge .badge {
+    font-weight: 600;
+    border-radius: 20px;
+  }
+
+  .bg-bronze {
+    background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%);
+    color: white;
+  }
+
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  }
+
+  .bg-gradient-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  }
+
+  .event-title {
+    color: #495057;
+    font-size: 1.1rem;
+    line-height: 1.4;
+  }
+
+  .attendee-count {
+    margin-top: 15px;
+  }
+
+  .btn {
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Dark Mode Support for Dashboard */
+  body.dark-mode .page-header {
+    background: linear-gradient(135deg, #2a1b5e 0%, #4a0e4e 100%) !important;
+  }
+
+  body.dark-mode .stat-card {
+    background: rgba(42, 45, 58, 0.95) !important;
+    border-color: #404040 !important;
+  }
+
+  body.dark-mode .stat-card:hover {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  body.dark-mode .top-event-card {
+    background: linear-gradient(135deg, #2a2d3a 0%, #323545 100%) !important;
+    border-color: #404040 !important;
+  }
+</style>
+
+<script>
+  // Initialize dashboard animations
+  document.addEventListener('DOMContentLoaded', function() {
+    // Animate counters with actual values
+    setTimeout(() => {
+      NexEvent.animateCounter('totalEvents', parseInt(document.getElementById('totalEvents').textContent) || 0);
+    }, 300);
+
+    // Add interactive tooltips
+    const actionButtons = document.querySelectorAll('.btn');
+    actionButtons.forEach(btn => {
+      if (!btn.hasAttribute('data-bs-toggle')) {
+        btn.setAttribute('data-bs-toggle', 'tooltip');
+        btn.setAttribute('data-bs-placement', 'top');
+        btn.setAttribute('title', btn.textContent.trim());
+      }
+    });
+  });
+</script>

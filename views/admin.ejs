@@ -1,0 +1,364 @@
+<% layout('layouts/boilerplate') %>
+
+<!-- Admin Header -->
+<div class="container">
+  <div class="page-header text-center py-4 mb-5 shadow-sm rounded">
+    <h1 class="fw-bold text-white">
+      👑 Admin Dashboard
+    </h1>
+    <p class="text-white-50 mb-0">System-wide analytics and management overview</p>
+  </div>
+</div>
+
+<!-- System Stats Cards -->
+<div class="admin-analytics">
+  <div class="row g-4">
+    <!-- Total Users -->
+    <div class="col-lg-3 col-md-6">
+      <div class="stat-card card h-100 border-0 shadow-lg" style="background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%); color: white;">
+        <div class="card-body text-center p-4">
+          <div class="stat-icon mb-3">
+            <i class="fas fa-users fa-3x text-white"></i>
+          </div>
+          <h2 class="stat-number display-4 fw-bold text-white mb-2"><%= stats.totalUsers %></h2>
+          <h5 class="stat-label card-title fw-semibold mb-0 text-white">Total Users</h5>
+          <small class="text-white-50">Registered users</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Events -->
+    <div class="col-lg-3 col-md-6">
+      <div class="stat-card card h-100 border-0 shadow-lg" style="background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%); color: white;">
+        <div class="card-body text-center p-4">
+          <div class="stat-icon mb-3">
+            <i class="fas fa-calendar-alt fa-3x text-white"></i>
+          </div>
+          <h2 class="stat-number display-4 fw-bold text-white mb-2"><%= stats.totalEvents %></h2>
+          <h5 class="stat-label card-title fw-semibold mb-0 text-white">Total Events</h5>
+          <small class="text-white-50">All events in system</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Attendees -->
+    <div class="col-lg-3 col-md-6">
+      <div class="stat-card card h-100 border-0 shadow-lg" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333;">
+        <div class="card-body text-center p-4">
+          <div class="stat-icon mb-3">
+            <i class="fas fa-user-check fa-3x text-primary"></i>
+          </div>
+          <h2 class="stat-number display-4 fw-bold text-primary mb-2"><%= stats.totalAttendees %></h2>
+          <h5 class="stat-label card-title fw-semibold mb-0 text-primary">Total Registrations</h5>
+          <small class="text-muted">Event registrations</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Health -->
+    <div class="col-lg-3 col-md-6">
+      <div class="stat-card card h-100 border-0 shadow-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="card-body text-center p-4">
+          <div class="stat-icon mb-3">
+            <i class="fas fa-cogs fa-3x text-white"></i>
+          </div>
+          <h2 class="stat-number display-4 fw-bold text-white mb-2">100%</h2>
+          <h5 class="stat-label card-title fw-semibold mb-0 text-white">System Status</h5>
+          <small class="text-white-50">Operational</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Roles Distribution -->
+<% if(stats.userRoles && stats.userRoles.length > 0) { %>
+<div class="container mb-5">
+  <div class="card border-0 shadow-lg">
+    <div class="card-header bg-gradient-info text-white">
+      <h4 class="mb-0">
+        <i class="fas fa-chart-pie me-2"></i>
+        User Distribution by Role
+      </h4>
+    </div>
+    <div class="card-body p-4">
+      <div class="row g-4">
+        <% stats.userRoles.forEach(role => { %>
+        <div class="col-md-4">
+          <div class="role-card card h-100 border-0 shadow-sm <%= role.ROLE === 'admin' ? 'admin-card' : role.ROLE === 'organizer' ? 'organizer-card' : 'attendee-card' %>">
+            <div class="card-body text-center p-4">
+              <div class="role-icon mb-3">
+                <% if(role.ROLE === 'admin') { %>
+                  <i class="fas fa-crown fa-3x text-white"></i>
+                <% } else if(role.ROLE === 'organizer') { %>
+                  <i class="fas fa-user-tie fa-3x text-white"></i>
+                <% } else { %>
+                  <i class="fas fa-user fa-3x text-white"></i>
+                <% } %>
+              </div>
+              <h2 class="role-count display-4 fw-bold text-white mb-2"><%= role.count %></h2>
+              <h5 class="role-name card-title fw-semibold mb-0 text-white"><%= role.ROLE.charAt(0).toUpperCase() + role.ROLE.slice(1) %>s</h5>
+              <small class="text-white-50">Active users</small>
+            </div>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<!-- Event Status & Categories -->
+<div class="container mb-5">
+  <div class="row g-4">
+    <!-- Event Status Distribution -->
+    <% if(stats.eventStatus && stats.eventStatus.length > 0) { %>
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-lg h-100">
+        <div class="card-header bg-gradient-success text-white">
+          <h4 class="mb-0">
+            <i class="fas fa-chart-bar me-2"></i>
+            Events by Status
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          <% stats.eventStatus.forEach(status => { %>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <span class="badge <%= status.STATUS === 'published' ? 'bg-success' : status.STATUS === 'draft' ? 'bg-secondary' : 'bg-danger' %> me-2">
+                <%= status.STATUS.charAt(0).toUpperCase() + status.STATUS.slice(1) %>
+              </span>
+            </div>
+            <div class="fw-bold"><%= status.count %></div>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Top Categories -->
+    <% if(stats.topCategories && stats.topCategories.length > 0) { %>
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-lg h-100">
+        <div class="card-header bg-gradient-warning text-white">
+          <h4 class="mb-0">
+            <i class="fas fa-tags me-2"></i>
+            Popular Categories
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          <% stats.topCategories.forEach(category => { %>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <span class="badge bg-primary me-2"><%= category.CATEGORY_NAME %></span>
+            </div>
+            <div class="fw-bold"><%= category.event_count %> events</div>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Recent Events -->
+<% if(stats.recentEvents && stats.recentEvents.length > 0) { %>
+<div class="container mb-5">
+  <div class="card border-0 shadow-lg">
+    <div class="card-header bg-gradient-primary text-white">
+      <h4 class="mb-0">
+        <i class="fas fa-clock me-2"></i>
+        Recent Events
+      </h4>
+    </div>
+    <div class="card-body p-4">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Event Name</th>
+              <th>Organizer</th>
+              <th>Status</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% stats.recentEvents.forEach(event => { %>
+            <tr>
+              <td class="fw-semibold"><%= event.EVENT_NAME %></td>
+              <td><%= event.ORGANIZER_NAME %></td>
+              <td>
+                <span class="badge <%= event.STATUS === 'published' ? 'bg-success' : event.STATUS === 'draft' ? 'bg-secondary' : 'bg-danger' %>">
+                  <%= event.STATUS.charAt(0).toUpperCase() + event.STATUS.slice(1) %>
+                </span>
+              </td>
+              <td><%= new Date(event.CREATED_AT).toLocaleDateString() %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<!-- Admin Actions -->
+<div class="admin-management">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <a href="/admin/users" class="btn btn-primary w-100 py-3">
+        <i class="fas fa-users-cog me-2"></i>
+        Manage Users
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="/admin/events" class="btn btn-success w-100 py-3">
+        <i class="fas fa-calendar-check me-2"></i>
+        Manage Events
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="/events" class="btn btn-info w-100 py-3">
+        <i class="fas fa-eye me-2"></i>
+        View All Events
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+  .page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+  }
+
+  .stat-card {
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  }
+
+  .stat-icon {
+    opacity: 0.8;
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .stat-label {
+    color: #6c757d;
+    font-size: 1rem;
+  }
+
+  .role-card {
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    transition: transform 0.3s ease;
+  }
+
+  .role-card:hover {
+    transform: translateY(-3px);
+  }
+
+  .role-icon {
+    opacity: 0.8;
+  }
+
+  .role-count {
+    font-size: 2rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  /* Role-specific card colors */
+  .admin-card {
+    background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%) !important;
+    color: #333 !important;
+  }
+
+  .admin-card .text-white {
+    color: #333 !important;
+  }
+
+  .admin-card .text-white-50 {
+    color: rgba(51, 51, 51, 0.7) !important;
+  }
+
+  .organizer-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  }
+
+  .attendee-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+  }
+
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  }
+
+  .bg-gradient-info {
+    background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
+  }
+
+  .bg-gradient-success {
+    background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+  }
+
+  .bg-gradient-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #cc9a06 100%);
+  }
+
+  .bg-gradient-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+  }
+
+  .btn {
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .table-responsive {
+    border-radius: 8px;
+  }
+
+  .table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+  }
+</style>
+
+<script>
+  // Initialize admin dashboard
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add tooltips to action buttons
+    const actionButtons = document.querySelectorAll('.btn');
+    actionButtons.forEach(btn => {
+      if (!btn.hasAttribute('data-bs-toggle')) {
+        btn.setAttribute('data-bs-toggle', 'tooltip');
+        btn.setAttribute('data-bs-placement', 'top');
+        btn.setAttribute('title', btn.textContent.trim());
+      }
+    });
+  });
+</script>

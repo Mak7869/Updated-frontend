@@ -31,7 +31,10 @@
             <th>Email</th>
             <th>Number</th>
             <th>Event</th>
-            <th>Status</th>
+            <th>Registration Status</th>
+            <% if(event) { %>
+            <th>Event Status</th>
+            <% } %>
             <th class="text-center">Actions</th>
           </tr>
         </thead>
@@ -51,11 +54,24 @@
             <!-- Status Pill -->
             <td>
               <span
-                class="status-pill <%= att.STATUS === 'Confirmed' ? 'status-confirmed' : att.STATUS === 'Pending' ? 'status-pending' : 'status-other' %>"
+                class="status-pill <%= att.STATUS === 'confirmed' ? 'status-confirmed' : att.STATUS === 'registered' ? 'status-pending' : 'status-other' %>"
               >
                 <%= att.STATUS %>
               </span>
             </td>
+
+            <!-- Event Status -->
+            <% if(event) { %>
+            <td>
+              <% if(event.STATUS === 'draft') { %>
+                <span class="badge bg-secondary">Draft</span>
+              <% } else if(event.STATUS === 'published') { %>
+                <span class="badge bg-success">Published</span>
+              <% } else if(event.STATUS === 'cancelled') { %>
+                <span class="badge bg-danger">Cancelled</span>
+              <% } %>
+            </td>
+            <% } %>
 
             <!-- Actions -->
             <td class="text-center">

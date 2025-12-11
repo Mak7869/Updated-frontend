@@ -1,122 +1,247 @@
 <% layout('layouts/boilerplate') -%>
 
-<div class="max-w-7xl mx-auto px-6 py-8">
-  <!-- Page Header -->
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-4xl font-bold text-gray-800 tracking-tight">
-      📅 Events Dashboard
-    </h1>
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="display-4 fw-bold">
+    📅 Events Dashboard
+  </h1>
 
-    <% if(user && user.ROLE === 'organizer') { %>
-    <a
-      href="/events/new"
-      class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold shadow-md hover:bg-indigo-700 transition-all duration-300"
-    >
-      ➕ Add New Event
-    </a>
+  <% if(user && user.ROLE === 'organizer') { %>
+  <a href="/events/new" class="btn btn-indigo">
+    ➕ Add New Event
+  </a>
+  <% } %>
+</div>
+
+<!-- Search and Filter Form -->
+<div class="search-filter-box">
+  <form method="GET" action="/events">
+    <div class="row g-3">
+      <!-- Search Input -->
+      <div class="col-md-6">
+        <label for="search" class="form-label fw-semibold">🔍 Search Events</label>
+        <input
+          type="text"
+          name="search"
+          id="search"
+          value="<%= searchQuery %>"
+          placeholder="Search by event name or description..."
+          class="form-control"
+        />
+      </div>
+
+      <!-- Filter Options -->
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">📅 Filter by Date</label>
+        <div class="d-flex flex-column gap-2">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="filter"
+              id="all"
+              value=""
+              <%= activeFilter === '' ? 'checked' : '' %>
+            />
+            <label class="form-check-label" for="all">
+              All Events
+            </label>
+          </div>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="filter"
+              id="upcoming"
+              value="upcoming"
+              <%= activeFilter === 'upcoming' ? 'checked' : '' %>
+            />
+            <label class="form-check-label" for="upcoming">
+              Upcoming
+            </label>
+          </div>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="filter"
+              id="past"
+              value="past"
+              <%= activeFilter === 'past' ? 'checked' : '' %>
+            />
+            <label class="form-check-label" for="past">
+              Past
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">🏷️ Category</label>
+        <select name="category" class="form-select">
+          <option value="">All Categories</option>
+          <option value="1" <%= activeCategory == '1' ? 'selected' : '' %>>Workshop</option>
+          <option value="2" <%= activeCategory == '2' ? 'selected' : '' %>>Seminar</option>
+          <option value="3" <%= activeCategory == '3' ? 'selected' : '' %>>Meetup</option>
+          <option value="4" <%= activeCategory == '4' ? 'selected' : '' %>>Concert</option>
+          <option value="5" <%= activeCategory == '5' ? 'selected' : '' %>>Conference</option>
+          <option value="6" <%= activeCategory == '6' ? 'selected' : '' %>>Webinar</option>
+          <option value="7" <%= activeCategory == '7' ? 'selected' : '' %>>Exhibition</option>
+          <option value="8" <%= activeCategory == '8' ? 'selected' : '' %>>Sports</option>
+          <option value="9" <%= activeCategory == '9' ? 'selected' : '' %>>Wedding</option>
+          <option value="10" <%= activeCategory == '10' ? 'selected' : '' %>>Birthday</option>
+        </select>
+      </div>
+
+      <!-- Sort Order -->
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">📈 Sort Order</label>
+        <select name="sort" class="form-select">
+          <option value="asc" <%= activeSort === 'asc' ? 'selected' : '' %>>📅 Oldest First</option>
+          <option value="desc" <%= activeSort === 'desc' ? 'selected' : '' %>>📅 Newest First</option>
+        </select>
+      </div>
+
+    <!-- Buttons -->
+    <div class="col-md-2 d-flex align-items-end gap-2">
+      <button type="submit" class="btn btn-primary flex-fill" data-bs-toggle="tooltip" title="Apply search and filters">
+        🔎 Search
+      </button>
+      <a href="/events" class="btn btn-secondary flex-fill" data-bs-toggle="tooltip" title="Reset all filters">
+        🔄 Reset
+      </a>
+    </div>
+    </div>
+
+    <!-- Clear Filters Link -->
+    <% if(searchQuery || activeFilter) { %>
+    <div class="mt-2">
+      <a href="/events" class="text-decoration-none">
+        <small class="text-muted">❌ Clear all filters</small>
+      </a>
+    </div>
     <% } %>
-  </div>
+  </form>
+</div>
 
-  <!-- Table Container -->
-  <div
-    class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200"
-  >
-    <table class="w-full text-left border-collapse">
-      <thead class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+<!-- Event List Container -->
+<div class="event-list-container">
+  <table class="table table-hover mb-0">
+      <thead class="table-dark">
         <tr>
-          <th class="py-4 px-5 text-sm font-semibold">ID</th>
-          <th class="py-4 px-5 text-sm font-semibold">Name</th>
-          <th class="py-4 px-5 text-sm font-semibold">Date</th>
-          <th class="py-4 px-5 text-sm font-semibold">Location</th>
-          <th class="py-4 px-5 text-sm font-semibold">Description</th>
-          <th class="py-4 px-5 text-sm font-semibold">Actions</th>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Description</th>
+          <th>Category & Tags</th>
+          <th>Status</th>
+          <th>Actions</th>
         </tr>
       </thead>
 
-      <tbody>
-        <% events.forEach(event => { %> <% const isAttending =
-        attendingEvents.includes(event.EVENT_ID); %> <% const isOrganizer = user
-        && event.ORGANIZER_ID === user.USER_ID; %>
+    <tbody>
+      <% events.forEach(event => { %> <% const isAttending = attendingEvents.includes(event.EVENT_ID); %> <% const isOrganizer = user && event.ORGANIZER_ID === user.USER_ID; %>
 
-        <tr class="border-b hover:bg-gray-50 transition-all">
-          <td class="py-4 px-5"><%= event.EVENT_ID %></td>
-          <td class="py-4 px-5 font-medium text-gray-800">
-            <%= event.EVENT_NAME %>
-          </td>
+      <tr>
+        <td><%= event.EVENT_ID %></td>
+        <td><%= event.EVENT_NAME %></td>
 
-          <td class="py-4 px-5">
-            <%= event.EVENT_DATE ? new
-            Date(event.EVENT_DATE).toISOString().slice(0,16).replace("T", " ") :
-            "N/A" %>
-          </td>
+        <td>
+          <%= event.EVENT_DATE ? new Date(event.EVENT_DATE).toISOString().slice(0,16).replace("T", " ") : "N/A" %>
+        </td>
 
-          <td class="py-4 px-5 text-gray-600"><%= event.LOCATION %></td>
-          <td class="py-4 px-5 text-gray-600"><%= event.DESCRIPTION %></td>
+        <td><%= event.LOCATION %></td>
+        <td><%= event.DESCRIPTION %></td>
 
-          <td class="py-4 px-5 space-x-2">
-            <% if(isOrganizer) { %>
+        <td>
+          <% if(event.CATEGORY_NAME) { %>
+            <span class="badge bg-primary me-1"><%= event.CATEGORY_NAME %></span>
+          <% } %>
+          <% if(event.TAGS) { %>
+            <% event.TAGS.split(',').forEach(tag => { %>
+              <span class="badge bg-info me-1"><%= tag %></span>
+            <% }) %>
+          <% } %>
+        </td>
 
-            <!-- Edit -->
-            <a
-              href="/events/<%= event.EVENT_ID %>/edit"
-              class="inline-block px-4 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-md transition"
-            >
-              Edit
-            </a>
+        <td>
+          <% if(event.STATUS === 'draft') { %>
+            <span class="badge bg-secondary">Draft</span>
+          <% } else if(event.STATUS === 'published') { %>
+            <span class="badge bg-success">Published</span>
+          <% } else if(event.STATUS === 'cancelled') { %>
+            <span class="badge bg-danger">Cancelled</span>
+          <% } %>
+        </td>
 
-            <!-- View Attendees -->
-            <a
-              href="/events/<%= event.EVENT_ID %>/attendees"
-              class="inline-block px-4 py-1.5 rounded-lg bg-gray-700 text-white hover:bg-gray-800 shadow-md transition"
-            >
-              Attendees
-            </a>
+        <td>
+          <% if(isOrganizer) { %>
 
-            <!-- Delete -->
-            <form
-              action="/events/<%= event.EVENT_ID %>?_method=DELETE"
-              method="POST"
-              class="inline-block"
-              onsubmit="return confirm('Delete this event?')"
-            >
-              <button
-                class="px-4 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-md transition"
-              >
-                Delete
+          <!-- Status Management -->
+          <% if(event.STATUS === 'draft') { %>
+            <form action="/events/<%= event.EVENT_ID %>/publish" method="POST" class="d-inline me-1">
+              <button type="submit" class="btn btn-sm btn-success" title="Publish Event">
+                📢 Publish
               </button>
             </form>
-
-            <% } else if(user && user.ROLE === 'attendee') { %> <%
-            if(isAttending) { %>
-            <!-- Leave Event -->
-            <form
-              action="/events/<%= event.EVENT_ID %>/leave"
-              method="POST"
-              class="inline-block"
-              onsubmit="return confirm('Leave this event?')"
-            >
-              <button
-                class="px-4 py-1.5 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 shadow-md transition"
-              >
-                Leave Event
+          <% } else if(event.STATUS === 'published') { %>
+            <form action="/events/<%= event.EVENT_ID %>/unpublish" method="POST" class="d-inline me-1">
+              <button type="submit" class="btn btn-sm btn-warning" title="Unpublish Event">
+                📝 Unpublish
               </button>
             </form>
+            <form action="/events/<%= event.EVENT_ID %>/cancel" method="POST" class="d-inline me-1" onsubmit="return confirm('Are you sure you want to cancel this event?')">
+              <button type="submit" class="btn btn-sm btn-danger" title="Cancel Event">
+                ❌ Cancel
+              </button>
+            </form>
+          <% } else if(event.STATUS === 'cancelled') { %>
+            <form action="/events/<%= event.EVENT_ID %>/publish" method="POST" class="d-inline me-1">
+              <button type="submit" class="btn btn-sm btn-success" title="Re-publish Event">
+                🔄 Re-publish
+              </button>
+            </form>
+          <% } %>
 
-            <% } else { %>
+          <!-- Edit -->
+          <a href="/events/<%= event.EVENT_ID %>/edit" class="btn btn-sm btn-primary me-1">
+            Edit
+          </a>
 
-            <!-- Join -->
-            <a
-              href="/events/<%= event.EVENT_ID %>/join"
-              class="inline-block px-4 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 shadow-md transition"
-            >
-              Join Event
-            </a>
+          <!-- View Attendees -->
+          <a href="/events/<%= event.EVENT_ID %>/attendees" class="btn btn-sm btn-secondary me-1">
+            Attendees
+          </a>
 
-            <% } %> <% } %>
-          </td>
-        </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
+          <!-- Delete -->
+          <form action="/events/<%= event.EVENT_ID %>?_method=DELETE" method="POST" class="d-inline" onsubmit="return confirm('Delete this event?')">
+            <button class="btn btn-sm btn-danger">
+              Delete
+            </button>
+          </form>
+
+          <% } else if(user && user.ROLE === 'attendee') { %> <%
+          if(isAttending) { %>
+          <!-- Leave Event -->
+          <form action="/events/<%= event.EVENT_ID %>/leave" method="POST" class="d-inline" onsubmit="return confirm('Leave this event?')">
+            <button class="btn btn-sm btn-warning">
+              Leave Event
+            </button>
+          </form>
+
+          <% } else { %>
+
+          <!-- Join -->
+          <a href="/events/<%= event.EVENT_ID %>/join" class="btn btn-sm btn-success">
+            Join Event
+          </a>
+
+          <% } %> <% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
 </div>
